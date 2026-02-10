@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Goofy Times Crossword</title>
+
+<style>
+  :root {
+    --cell: 36px;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  body {
+    margin: 0;
+    padding: 16px;
+    background: #f7f7f7;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  h1 {
+    margin-bottom: 12px;
+    font-size: 24px;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 20px;
+    max-width: 900px;
+    width: 100%;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(22, var(--cell));
+    grid-auto-rows: var(--cell);
+    border: 2px solid #000;
+    background: #000;
+  }
+
+  .cell {
+    position: relative;
+    background: #fff;
+    border: 1px solid #000;
+    box-sizing: border-box;
+  }
+
+  .cell.block {
+    background: #000;
+  }
+
+  .cell.highlight {
+    background: #e6f0ff;
+  }
+
+  .cell.selected {
+    outline: 2px solid #3b82ff;
+    outline-offset: -2px;
+  }
+
+  .cell input {
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    text-align: center;
+    font-size: 18px;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: transparent;
+    caret-color: #000; /* cursor visible */
+  }
+
+  .number {
+    position: absolute;
+    top: 2px;
+    left: 3px;
+    font-size: 9px;
+  }
+
+  .clues {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .clue-list h3 {
+    margin: 0 0 6px;
+    font-size: 14px;
+    border-bottom: 1px solid #ccc;
+  }
+
+  .clue {
+    font-size: 13px;
+    margin-bottom: 4px;
+  }
+
+  @media (max-width: 768px) {
+    :root { --cell: 28px; }
+    .layout { grid-template-columns: 1fr; }
+    .clues { grid-template-columns: 1fr; }
+  }
+
+#celebration {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 999;
+}
+#start-screen {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #fdfbfb, #ebedee);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  cursor: pointer;
+}
+
+.start-content {
+  text-align: center;
+  animation: pulse 1.6s infinite;
+}
+
+.start-content h2 {
+  font-size: 24px;
+  margin: 12px 0 6px;
+}
+
+.start-content p {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.gift {
+  font-size: 64px;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.layout {
+  animation: fadeIn 0.6s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+</style>
+</head>
+
+<canvas id="celebration"></canvas>
+
+<body>
+<div id="start-screen">
+  <div class="start-content">
+    <div class="gift">🎁</div>
+    <h2>Click here for a surprise</h2>
+    <p>(trust me)</p>
+  </div>
+</div>
+
+<h1>The Goofy Times Crossword</h1>
+
+<div class="layout">
+  <div id="grid" class="grid"></div>
+
+  <div class="clues">
+    <div class="clue-list">
+      <h3>ACROSS</h3>
+      <div class="clue">4. Third date restaurant</div>
+      <div class="clue">6. The city I was born in</div>
+      <div class="clue">7. Common hangout place</div>
+      <div class="clue">10. Your preferred music genre, jokingly</div>
+      <div class="clue">12. An activity we both enjoy</div>
+      <div class="clue">13. Queen and ace</div>
+      <div class="clue">15. Flying prehistoric creature</div>
+      <div class="clue">16. A special date in October</div>
+    </div>
+
+    <div class="clue-list">
+      <h3>DOWN</h3>
+      <div class="clue">1. An animal that’s part of an inside joke</div>
+      <div class="clue">2. Best team on the planet to you, sometimes</div>
+      <div class="clue">3. My favorite artist</div>
+      <div class="clue">5. Tasty fun guys</div>
+      <div class="clue">8. Your favorite color</div>
+      <div class="clue">9. A concert we went to</div>
+      <div class="clue">11. Charles Barkley’s funny pal</div>
+      <div class="clue">14. A city in Michigan</div>
+      <div class="clue">15. Frequently referred to, memorable place</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const gridPattern = [
+  "################_#####",
+  "################_#_###",
+  "###########_####_#_###",
+  "###########_#_______##",
+  "###########_######_###",
+  "###########_######_###",
+  "###########_##_###_###",
+  "###########_#_________",
+  "###########_##_###_###",
+  "##########_____#######",
+  "#########_#_##_#######",
+  "#######_#_#_##_#######",
+  "#######_#_####_#######",
+  "#####______________###",
+  "#######_######_#_#####",
+  "##_______#######_#####",
+  "#######_########_#####",
+  "_________#############",
+  "###_###_##___________#",
+  "___________###########",
+  "###_######_###########",
+  "###_######_###########",
+  "###_######_###########"
+];
+
+const rows = gridPattern.length;
+const cols = gridPattern[0].length;
+const grid = document.getElementById("grid");
+const cells = [];
+let direction = "across";
+let celebrated = false;
+
+function isBlock(r, c) {
+  return gridPattern[r][c] === "#";
+}
+
+function index(r, c) {
+  return r * cols + c;
+}
+
+/* BUILD GRID */
+let clueNumber = 1;
+for (let r = 0; r < rows; r++) {
+  for (let c = 0; c < cols; c++) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+
+    if (isBlock(r, c)) {
+      cell.classList.add("block");
+    } else {
+      const input = document.createElement("input");
+      input.maxLength = 1;
+      cell.appendChild(input);
+
+      const startsAcross = (c === 0 || isBlock(r, c - 1)) && (c + 1 < cols && !isBlock(r, c + 1));
+      const startsDown = (r === 0 || isBlock(r - 1, c)) && (r + 1 < rows && !isBlock(r + 1, c));
+
+      if (startsAcross || startsDown) {
+        const num = document.createElement("div");
+        num.className = "number";
+        num.textContent = clueNumber++;
+        cell.appendChild(num);
+      }
+
+      input.addEventListener("focus", () => highlightWord(r, c));
+      input.addEventListener("input", () => {
+        moveNext(r, c);
+        checkWin();
+      });
+    }
+
+    grid.appendChild(cell);
+    cells.push(cell);
+  }
+}
+
+/* HIGHLIGHT */
+function highlightWord(r, c) {
+  cells.forEach(cell => cell.classList.remove("highlight", "selected"));
+
+  const dr = direction === "across" ? 0 : 1;
+  const dc = direction === "across" ? 1 : 0;
+
+  let sr = r, sc = c;
+  while (sr - dr >= 0 && sc - dc >= 0 && !isBlock(sr - dr, sc - dc)) {
+    sr -= dr;
+    sc -= dc;
+  }
+
+  let cr = sr, cc = sc;
+  while (cr < rows && cc < cols && !isBlock(cr, cc)) {
+    cells[index(cr, cc)].classList.add("highlight");
+    cr += dr;
+    cc += dc;
+  }
+
+  cells[index(r, c)].classList.add("selected");
+}
+
+/* AUTO ADVANCE */
+function moveNext(r, c) {
+  const dr = direction === "across" ? 0 : 1;
+  const dc = direction === "across" ? 1 : 0;
+  const nr = r + dr;
+  const nc = c + dc;
+
+  if (nr < rows && nc < cols && !isBlock(nr, nc)) {
+    cells[index(nr, nc)].querySelector("input")?.focus();
+  }
+}
+
+/* WIN CHECK */
+function checkWin() {
+  if (celebrated) return;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      if (!isBlock(r, c)) {
+        const v = cells[index(r, c)].querySelector("input").value;
+        if (!v) return;
+      }
+    }
+  }
+
+  celebrated = true;
+  celebrate();
+}
+
+/* 🎉 BIG BOISTEROUS CELEBRATION */
+function celebrate() {
+  const canvas = document.getElementById("celebration");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const pieces = Array.from({ length: 400 }, () => ({
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    r: Math.random() * 6 + 4,
+    dx: (Math.random() - 0.5) * 16,
+    dy: (Math.random() - 0.5) * 16,
+    life: Math.random() * 100 + 80,
+    hue: Math.random() * 360
+  }));
+
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    pieces.forEach(p => {
+      p.x += p.dx;
+      p.y += p.dy;
+      p.dy += 0.25;
+      p.life--;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsl(${p.hue},100%,60%)`;
+      ctx.fill();
+    });
+
+    if (pieces.some(p => p.life > 0)) {
+      requestAnimationFrame(frame);
+    }
+  }
+
+  frame();
+}
+const startScreen = document.getElementById("start-screen");
+
+startScreen.addEventListener("click", () => {
+  startScreen.style.opacity = "0";
+  startScreen.style.pointerEvents = "none";
+  setTimeout(() => startScreen.remove(), 400);
+});
+</script>
+</body>
+</html>
