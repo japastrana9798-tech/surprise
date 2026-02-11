@@ -375,6 +375,11 @@ function celebrateWin() {
 
   document.body.appendChild(overlay);
 
+  overlay.addEventListener("click", (e) => {
+   if (e.target.id === "celebrationOverlay") {
+     overlay.remove();
+  });
+
 function startConfettiExplosion() {
   const duration = 5000;
   const end = Date.now() + duration;
