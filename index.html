@@ -158,6 +158,42 @@
   50% { transform: translateY(-10px); }
   100% { transform: translateY(0); }
 }
+  #celebrationOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  animation: fadeIn 0.4s ease-in;
+}
+
+.celebration-box {
+  background: white;
+  padding: 40px 60px;
+  border-radius: 20px;
+  text-align: center;
+  font-family: 'Arial Black', sans-serif;
+  animation: popUp 0.6s ease-out;
+}
+
+.celebration-box h1 {
+  font-size: 36px;
+  margin: 10px 0;
+  color: #ff4da6;
+}
+
+@keyframes popUp {
+  0% { transform: scale(0.3); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 </style>
 </head>
 
@@ -273,7 +309,6 @@ for (let r = 0; r < rows; r++) {
 
       input.addEventListener("focus", () => highlightWord(r, c));
       input.addEventListener("input", () => {
-        moveNext(r, c);
         checkWin();
       });
     }
@@ -306,18 +341,6 @@ function highlightWord(r, c) {
   cells[index(r, c)].classList.add("selected");
 }
 
-/* AUTO ADVANCE */
-function moveNext(r, c) {
-  const dr = direction === "across" ? 0 : 1;
-  const dc = direction === "across" ? 1 : 0;
-  const nr = r + dr;
-  const nc = c + dc;
-
-  if (nr < rows && nc < cols && !isBlock(nr, nc)) {
-    cells[index(nr, nc)].querySelector("input")?.focus();
-  }
-}
-
 /* WIN CHECK */
 function checkWin() {
   if (celebrated) return;
@@ -336,12 +359,44 @@ function checkWin() {
 }
 
 /* 🎉 BIG BOISTEROUS CELEBRATION */
-function celebrate() {
-  const canvas = document.getElementById("celebration");
-  const ctx = canvas.getContext("2d");
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+function celebrateWin() {
+  const overlay = document.createElement("div");
+  overlay.id = "celebrationOverlay";
 
+  overlay.innerHTML = `
+    <div class="celebration-box">
+      🎉🎊🎉
+      <h1>CONGRATULATIONS!</h1>
+      <p>You solved the puzzle!</p>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+function startConfettiExplosion() {
+  const duration = 5000;
+  const end = Date.now() + duration;
+
+  (function frame() {
+    confetti({
+      particleCount: 8,
+      angle: 60,
+      spread: 100,
+      origin: { x: 0 }
+    });
+    confetti({
+      particleCount: 8,
+      angle: 120,
+      spread: 100,
+      origin: { x: 1 }
+    });
+
+    if (Date.now() < end) {
+      requestAnimationFrame(frame);
+    }
+  })();
+}
+ 
   const pieces = Array.from({ length: 400 }, () => ({
     x: canvas.width / 2,
     y: canvas.height / 2,
