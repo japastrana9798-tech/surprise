@@ -342,6 +342,11 @@ function highlightWord(r, c) {
   cells[index(r, c)].classList.add("selected");
 }
 
+  startScreen.addEventListener("click", () => {
+  startScreen.style.opacity = "0";
+  startScreen.style.pointerEvents = "none";
+  setTimeout(() => startScreen.remove(), 400);
+  
 /* WIN CHECK */
 function checkWin() {
   if (celebrated) return;
@@ -445,10 +450,7 @@ const ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
-startScreen.addEventListener("click", () => {
-  startScreen.style.opacity = "0";
-  startScreen.style.pointerEvents = "none";
-  setTimeout(() => startScreen.remove(), 400);
+
 });
 </script>
 </body>
