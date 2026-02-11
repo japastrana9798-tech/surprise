@@ -343,24 +343,21 @@ function highlightWord(r, c) {
 
 /* WIN CHECK */
 function checkWin() {
- const inputs _ document.querySelectorAll(".cell input");
-  let isComplete = true;
-
-  inputs.forEach(input => {
-    const correct = input.dataset.answer;
-    if (!correct) return;
+  if (celebrated) return;
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       if (!isBlock(r, c)) {
-        const v = cells[index(r, c)].querySelector("input").value;
-        if (!v) return;
+        const value = cells[index(r, c)].querySelector("input").value;
+        if (!value) {
+          return; // not complete yet
+        }
       }
     }
   }
 
   celebrated = true;
-  celebrate();
+  celebrateWin();
 }
 
 /* 🎉 BIG BOISTEROUS CELEBRATION */
@@ -435,6 +432,12 @@ function startConfettiExplosion() {
   frame();
 }
 const startScreen = document.getElementById("start-screen");
+
+const canvas = document.getElementById("celebration");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
 startScreen.addEventListener("click", () => {
   startScreen.style.opacity = "0";
