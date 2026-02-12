@@ -384,40 +384,65 @@ function celebrateWin() {
       🎉🎊🎉
       <h1>CONGRATULATIONS!</h1>
       <p>You solved the puzzle!</p>
+      <button id="closeCelebration">Close</button>
+      <canvas id="celebrationCanvas"></canvas>
     </div>
   `;
 
   document.body.appendChild(overlay);
 
-  overlay.addEventListener("click", (e) => {
-   if (e.target.id === "celebrationOverlay") {
-     overlay.remove();
-  });
+  // Close when clicking background
+  overlay.addEventListener("click", (e) => {
+    if (e.target.id === "celebrationOverlay") {
+      overlay.remove();
+    }
+  });
 
-function startConfettiExplosion() {
-  const duration = 5000;
-  const end = Date.now() + duration;
+  // Close button
+  document.getElementById("closeCelebration").addEventListener("click", () => {
+    overlay.remove();
+  });
 
-  (function frame() {
-    confetti({
-      particleCount: 8,
-      angle: 60,
-      spread: 100,
-      origin: { x: 0 }
-    });
-    confetti({
-      particleCount: 8,
-      angle: 120,
-      spread: 100,
-      origin: { x: 1 }
-    });
+  // 🎉 CONFETTI CANVAS
+  const canvas = document.getElementById("celebrationCanvas");
+  const ctx = canvas.getContext("2d");
 
-    if (Date.now() < end) {
-      requestAnimationFrame(frame);
-    }
-  })();
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  const pieces = Array.from({ length: 300 }, () => ({
+    x: canvas.width / 2,
+    y: canvas.height / 2,
+    r: Math.random() * 6 + 4,
+    dx: (Math.random() - 0.5) * 14,
+    dy: (Math.random() - 0.5) * 14,
+    life: Math.random() * 100 + 80,
+    hue: Math.random() * 360
+  }));
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    pieces.forEach(p => {
+      p.x += p.dx;
+      p.y += p.dy;
+      p.dy += 0.25;
+      p.life--;
+
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsl(${p.hue},100%,60%)`;
+      ctx.fill();
+    });
+
+    if (pieces.some(p => p.life > 0)) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  animate();
 }
- 
+  
   const pieces = Array.from({ length: 400 }, () => ({
     x: canvas.width / 2,
     y: canvas.height / 2,
@@ -450,15 +475,6 @@ function startConfettiExplosion() {
 
   frame();
 }
-const startScreen = document.getElementById("start-screen");
-
-const canvas = document.getElementById("celebration");
-const ctx = canvas.getContext("2d");
-
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-
 });
 </script>
 </body>
