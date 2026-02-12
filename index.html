@@ -348,11 +348,14 @@ function highlightWord(r, c) {
 
 /* START SCREEN */
 const startScreen = document.getElementById("start-screen");
+const puzzle = document.getElementById("puzzleContainer");
   
   startScreen.addEventListener("click", () => {
-  startScreen.style.opacity = "0";
-  startScreen.style.pointerEvents = "none";
-  setTimeout(() => startScreen.remove(), 400);
+    startScreen.style.opacity = "0";
+    setTimeout(() => {
+      startScreen.remove();
+      puzzle.style.display = "block";
+    }, 400);
   });
   
 /* WIN CHECK */
@@ -442,40 +445,6 @@ function celebrateWin() {
 
   animate();
 }
-  
-  const pieces = Array.from({ length: 400 }, () => ({
-    x: canvas.width / 2,
-    y: canvas.height / 2,
-    r: Math.random() * 6 + 4,
-    dx: (Math.random() - 0.5) * 16,
-    dy: (Math.random() - 0.5) * 16,
-    life: Math.random() * 100 + 80,
-    hue: Math.random() * 360
-  }));
-
-  function frame() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    pieces.forEach(p => {
-      p.x += p.dx;
-      p.y += p.dy;
-      p.dy += 0.25;
-      p.life--;
-
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = `hsl(${p.hue},100%,60%)`;
-      ctx.fill();
-    });
-
-    if (pieces.some(p => p.life > 0)) {
-      requestAnimationFrame(frame);
-    }
-  }
-
-  frame();
-}
-});
 </script>
 </body>
 </html>
