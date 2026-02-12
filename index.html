@@ -209,6 +209,10 @@
   </div>
 </div>
 
+  <div id="puzzleContainer" style="display:none;">
+    <!-- crossword grid here -->
+  </div>
+
 <h1>The Goofy Times Crossword</h1>
 
 <div class="layout">
@@ -342,10 +346,14 @@ function highlightWord(r, c) {
   cells[index(r, c)].classList.add("selected");
 }
 
+/* START SCREEN */
+const startScreen = document.getElementById("start-screen");
+  
   startScreen.addEventListener("click", () => {
   startScreen.style.opacity = "0";
   startScreen.style.pointerEvents = "none";
   setTimeout(() => startScreen.remove(), 400);
+  });
   
 /* WIN CHECK */
 function checkWin() {
